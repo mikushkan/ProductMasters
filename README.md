@@ -42,7 +42,7 @@
 
 ## 4. Прототип
 
-[Ссылка на прототип — заполнить после сборки]
+https://mikushkan.github.io/ProductMasters/prototype.html
 
 ## 5. Метрика успеха
 

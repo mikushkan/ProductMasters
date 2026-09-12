@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaspi Магазин — Чат с продавцом (прототип)</title>
+<style>
+  :root{
+    --kaspi-red:#E5342A;
+    --kaspi-red-dark:#C22A21;
+    --ink:#1C1C1E;
+    --ink-soft:#6B6B70;
+    --bg:#F3F3F5;
+    --card:#FFFFFF;
+    --line:#E7E7EA;
+    --green:#2FAE55;
+    --amber:#F0A020;
+    --amber-bg:#FFF3E0;
+    --green-bg:#E9F8EE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(180deg,#EDEDF0,#DADADF);
+    display:flex;
+    justify-content:center;
+    padding:32px 12px;
+    min-height:100vh;
+    color:var(--ink);
+  }
+  .phone{
+    width:390px;
+    max-width:100%;
+    background:var(--bg);
+    border-radius:40px;
+    box-shadow:0 30px 60px rgba(0,0,0,.25), 0 0 0 10px #111;
+    overflow:hidden;
+    position:relative;
+  }
+  .statusbar{
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    font-size:14px;
+    font-weight:600;
+    background:var(--bg);
+  }
+  .screen{display:none;flex-direction:column;min-height:700px;}
+  .screen.active{display:flex;}
+
+  /* ---- Order screen ---- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 18px 18px;
+    background:var(--bg);
+  }
+  .topbar h1{font-size:17px;margin:0;font-weight:700;}
+  .backbtn, .closebtn{
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:transparent;border:none;font-size:18px;cursor:pointer;
+  }
+  .closebtn{background:#E4E4E8;}
+
+  .card{
+    background:var(--card);
+    margin:8px 14px;
+    border-radius:18px;
+    padding:16px 18px;
+  }
+  .row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:15px;}
+  .row .label{color:var(--ink-soft);}
+  .row .value{font-weight:700;}
+
+  .seller-row{display:flex;align-items:center;gap:12px;}
+  .avatar{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:18px;flex-shrink:0;
+  }
+  .seller-name{font-weight:700;font-size:16px;flex:1;}
+  .chat-badge{
+    position:relative;
+    width:38px;height:38px;border-radius:12px;
+    background:#EAF2FF;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;border:none;
+    font-size:18px;
+  }
+  .chat-badge .dot{
+    position:absolute;top:-4px;right:-4px;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--kaspi-red);
+    border:2px solid #fff;
+    display:none;
+  }
+  .chat-badge.alert .dot{display:block;}
+
+  .problem-tag{
+    display:none;
+    align-items:center;gap:8px;
+    background:var(--amber-bg);
+    color:#8A5A00;
+    font-size:13px;font-weight:700;
+    padding:10px 14px;border-radius:12px;
+    margin:0 14px 8px;
+  }
+  .problem-tag.show{display:flex;}
+
+  .cta{
+    background:var(--kaspi-red);
+    color:#fff;font-weight:700;font-size:15px;
+    border:none;border-radius:14px;
+    padding:14px;margin:10px 14px 0;
+    cursor:pointer;text-align:center;
+  }
+  .cta.secondary{background:#fff;color:var(--kaspi-red);border:1.5px solid var(--kaspi-red);}
+
+  /* ---- Chat screen ---- */
+  .chat-header{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 16px;background:var(--card);
+    border-bottom:1px solid var(--line);
+  }
+  .chat-header .info{flex:1;}
+  .chat-header .name{font-weight:700;font-size:15px;}
+  .chat-header .status{font-size:12px;color:var(--ink-soft);}
+
+  .sla-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--amber-bg);
+    padding:10px 16px;font-size:12.5px;color:#8A5A00;font-weight:600;
+  }
+  .sla-bar.ok{background:var(--green-bg);color:#1E7A3D;}
+  .sla-bar .time{font-variant-numeric:tabular-nums;font-weight:800;}
+
+  .messages{
+    flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;background:var(--bg);
+  }
+  .msg{
+    max-width:78%;
+    padding:10px 14px;
+    border-radius:16px;
+    font-size:14.5px;
+    line-height:1.35;
+  }
+  .msg.buyer{
+    align-self:flex-end;
+    background:var(--kaspi-red);
+    color:#fff;
+    border-bottom-right-radius:4px;
+  }
+  .msg.seller{
+    align-self:flex-start;
+    background:#fff;
+    border:1px solid var(--line);
+    border-bottom-left-radius:4px;
+  }
+  .msg.system{
+    align-self:center;
+    background:#EFEFF2;
+    color:var(--ink-soft);
+    font-size:12.5px;
+    text-align:center;
+    border-radius:10px;
+    max-width:90%;
+  }
+  .msg.guide{
+    align-self:flex-start;
+    background:#EAF2FF;
+    border:1px solid #CFE3FF;
+    border-bottom-left-radius:4px;
+  }
+  .msg .tag{display:block;font-size:11px;font-weight:800;margin-bottom:3px;opacity:.7;text-transform:uppercase;letter-spacing:.02em;}
+
+  .composer{
+    display:flex;gap:8px;padding:12px;background:var(--card);
+    border-top:1px solid var(--line);
+  }
+  .composer input{
+    flex:1;border:1px solid var(--line);border-radius:20px;
+    padding:12px 16px;font-size:14.5px;outline:none;
+  }
+  .composer button{
+    background:var(--kaspi-red);color:#fff;border:none;
+    width:42px;height:42px;border-radius:50%;
+    font-size:16px;cursor:pointer;flex-shrink:0;
+  }
+  .composer button:disabled{background:#C9C9CE;cursor:default;}
+
+  .demo-controls{
+    padding:10px 16px 16px;
+    background:var(--card);
+    border-top:1px dashed var(--line);
+    display:flex;gap:8px;
+  }
+  .demo-controls button{
+    flex:1;font-size:12.5px;font-weight:700;
+    padding:10px 8px;border-radius:10px;border:none;cursor:pointer;
+  }
+  .demo-controls .btn-respond{background:var(--green-bg);color:#1E7A3D;}
+  .demo-controls .btn-wait{background:#EFEFF2;color:var(--ink-soft);}
+
+  .note{
+    text-align:center;font-size:11px;color:var(--ink-soft);
+    padding:6px 20px 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar"><span>17:15</span><span>🔋 100%</span></div>
+
+  <!-- SCREEN 1: ORDER -->
+  <div class="screen active" id="screen-order">
+    <div class="topbar">
+      <button class="backbtn">‹</button>
+      <h1>Заказ №1049723649</h1>
+      <button class="closebtn">✕</button>
+    </div>
+
+    <div class="problem-tag" id="problem-tag">
+      ⚠️ Продавец не ответил вовремя — подключён Kaspi Гид
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="label">Оплачено</span><span class="value">3 018 ₸</span></div>
+      <div class="row"><span class="label">Статус</span><span class="value">Пришёл не тот товар</span></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:12px;">Продавец</div>
+      <div class="seller-row">
+        <div class="avatar">И</div>
+        <div class="seller-name">ИП STYLE HOME</div>
+        <button class="chat-badge" id="chat-open-btn">💬<span class="dot" id="chat-dot"></span></button>
+      </div>
+    </div>
+
+    <button class="cta secondary" onclick="resetDemo()">↺ Сбросить демо</button>
+    <div class="note">Прототип: SLA-таймер и автоэскалация чата продавец↔покупатель</div>
+  </div>
+
+  <!-- SCREEN 2: CHAT -->
+  <div class="screen" id="screen-chat">
+    <div class="chat-header">
+      <button class="backbtn" onclick="goTo('screen-order')">‹</button>
+      <div class="avatar" style="width:36px;height:36px;font-size:15px;">И</div>
+      <div class="info">
+        <div class="name">ИП STYLE HOME</div>
+        <div class="status" id="chat-status">Обычно отвечает в течение дня</div>
+      </div>
+    </div>
+
+    <div class="sla-bar" id="sla-bar">
+      <span>⏱ SLA на ответ продавца</span>
+      <span class="time" id="sla-time">00:15</span>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="msg system">Заказ №1049723649 · NUTRAXIN Collagen</div>
+    </div>
+
+    <div class="composer">
+      <input type="text" id="msg-input" placeholder="Написать продавцу…">
+      <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+
+    <div class="demo-controls">
+      <button class="btn-respond" onclick="sellerResponds()">▶ Продавец ответил</button>
+      <button class="btn-wait" onclick="skipToTimeout()">⏭ Продавец молчит (таймаут)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let timerInterval = null;
+let secondsLeft = 15; // демо: 15 сек имитируют 24 часа SLA
+let escalated = false;
+let messageSent = false;
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+document.getElementById('chat-open-btn').addEventListener('click', ()=>{
+  goTo('screen-chat');
+});
+
+function sendMessage(){
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if(!text) return;
+  addMessage('buyer', null, text);
+  input.value='';
+  if(!messageSent){
+    messageSent = true;
+    document.getElementById('send-btn').disabled = false;
+    startSLA();
+  }
+}
+
+document.getElementById('msg-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter') sendMessage();
+});
+
+function addMessage(role, tag, text){
+  const wrap = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = (tag ? '<span class="tag">'+tag+'</span>' : '') + text;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function startSLA(){
+  clearInterval(timerInterval);
+  secondsLeft = 15;
+  updateSlaDisplay();
+  timerInterval = setInterval(()=>{
+    secondsLeft--;
+    updateSlaDisplay();
+    if(secondsLeft<=0){
+      clearInterval(timerInterval);
+      escalate();
+    }
+  },1000);
+}
+
+function updateSlaDisplay(){
+  const bar = document.getElementById('sla-bar');
+  const time = document.getElementById('sla-time');
+  const m = Math.floor(secondsLeft/60).toString().padStart(2,'0');
+  const s = (secondsLeft%60).toString().padStart(2,'0');
+  time.textContent = m+':'+s;
+  bar.classList.toggle('ok', secondsLeft>7);
+}
+
+function sellerResponds(){
+  if(!messageSent){
+    addMessage('system', null, 'Сначала отправьте сообщение продавцу');
+    return;
+  }
+  if(escalated) return;
+  clearInterval(timerInterval);
+  addMessage('seller', 'ИП STYLE HOME', 'Здравствуйте! Приносим извинения, оформим обмен на нужный размер сегодня же 🙏');
+  document.getElementById('sla-bar').innerHTML = '<span>✅ Продавец ответил вовремя</span><span class="time">без эскалации</span>';
+  document.getElementById('sla-bar').classList.add('ok');
+  document.getElementById('chat-status').textContent = 'Ответил в течение SLA';
+}
+
+function skipToTimeout(){
+  if(!messageSent){
+    addMessage('system', null, 'Сначала отправьте сообщение продавцу');
+    return;
+  }
+  secondsLeft = 0;
+  updateSlaDisplay();
+  clearInterval(timerInterval);
+  escalate();
+}
+
+function escalate(){
+  if(escalated) return;
+  escalated = true;
+  addMessage('system', null, 'Продавец не ответил в течение SLA (24 часа)');
+  addMessage('guide', 'Kaspi Гид · Дана', 'Здравствуйте! Подключилась к диалогу — вижу всю историю переписки, повторять не нужно. Уже направила запрос продавцу с фиксированным сроком ответа. Вернусь с решением.');
+  document.getElementById('sla-bar').innerHTML = '<span>🔴 SLA истёк — эскалация в Kaspi Гид</span><span class="time">00:00</span>';
+  document.getElementById('chat-status').textContent = 'Эскалировано в поддержку';
+  document.getElementById('chat-dot').style.display='block';
+  document.getElementById('problem-tag').classList.add('show');
+}
+
+function resetDemo(){
+  clearInterval(timerInterval);
+  secondsLeft = 15;
+  escalated = false;
+  messageSent = false;
+  document.getElementById('messages').innerHTML = '<div class="msg system">Заказ №1049723649 · NUTRAXIN Collagen</div>';
+  document.getElementById('sla-bar').innerHTML = '<span>⏱ SLA на ответ продавца</span><span class="time" id="sla-time">00:15</span>';
+  document.getElementById('sla-bar').classList.remove('ok');
+  document.getElementById('chat-status').textContent = 'Обычно отвечает в течение дня';
+  document.getElementById('chat-dot').style.display='none';
+  document.getElementById('problem-tag').classList.remove('show');
+  goTo('screen-order');
+}
+</script>
+
+</body>
+</html>
